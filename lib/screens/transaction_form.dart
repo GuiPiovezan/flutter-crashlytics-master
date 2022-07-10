@@ -6,6 +6,7 @@ import 'package:alura_crashlytics/components/transaction_auth_dialog.dart';
 import 'package:alura_crashlytics/http/webclients/transaction_webclient.dart';
 import 'package:alura_crashlytics/models/contact.dart';
 import 'package:alura_crashlytics/models/transaction.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
@@ -74,7 +75,7 @@ class _TransactionFormState extends State<TransactionForm> {
                 padding: const EdgeInsets.only(top: 16.0),
                 child: SizedBox(
                   width: double.maxFinite,
-                  child: RaisedButton(
+                  child: ElevatedButton(
                     child: Text('Transfer'),
                     onPressed: () {
                       final double value =
@@ -136,12 +137,23 @@ class _TransactionFormState extends State<TransactionForm> {
     });
     final Transaction transaction =
     await _webClient.save(transactionCreated, password).catchError((e) {
-      print('Erro aqui: $e');
+
+      FirebaseCrashlytics.instance.setCustomKey('exception', e.toString());
+      FirebaseCrashlytics.instance.setCustomKey('http_body', transactionCreated.toString());
+      FirebaseCrashlytics.instance.recordError(e, null);
       _showFailureMessage(context, message: e.message);
     }, test: (e) => e is HttpException).catchError((e) {
+
+      FirebaseCrashlytics.instance.setCustomKey('exception', e.toString());
+      FirebaseCrashlytics.instance.setCustomKey('http_body', transactionCreated.toString());
+      FirebaseCrashlytics.instance.recordError(e, null);
       _showFailureMessage(context,
           message: 'timeout submitting the transaction');
     }, test: (e) => e is TimeoutException).catchError((e) {
+
+      FirebaseCrashlytics.instance.setCustomKey('exception', e.toString());
+      FirebaseCrashlytics.instance.setCustomKey('http_body', transactionCreated);
+      FirebaseCrashlytics.instance.recordError(e, null);
       _showFailureMessage(context);
     }).whenComplete(() {
       setState(() {

@@ -5,7 +5,7 @@ import 'package:alura_crashlytics/models/transaction.dart';
 import 'package:http/http.dart';
 
 class TransactionWebClient {
-  var baseUrl = Uri.parse('http://192.168.1.107:8080/transactions');
+  var baseUrl = Uri.parse('http://192.168.0.104:8080/abc');
   
   Future<List<Transaction>> findAll() async {
     final Response response =
@@ -19,7 +19,6 @@ class TransactionWebClient {
   Future<Transaction> save(Transaction transaction, String password) async {
     final String transactionJson = jsonEncode(transaction.toJson());
 
-    await Future.delayed(Duration(seconds: 2));
     final Response response = await client.post(baseUrl,
         headers: {
           'Content-type': 'application/json',
@@ -32,7 +31,7 @@ class TransactionWebClient {
       return Transaction.fromJson(jsonDecode(response.body));
     }
 
-    throw HttpException(_getMessage(response.statusCode));
+    throw HttpException(_getMessage(response.statusCode), response.statusCode);
   }
 
   String _getMessage(int statusCode) {
@@ -51,6 +50,7 @@ class TransactionWebClient {
 
 class HttpException implements Exception {
   final String message;
+  final int statusCode;
 
-  HttpException(this.message);
+  HttpException(this.message, this.statusCode);
 }
